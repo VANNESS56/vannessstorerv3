@@ -171,7 +171,7 @@ export default function PurchaseModal({ isOpen, onClose, product }: PurchaseModa
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    endpoint: 'cancle',
+                    endpoint: 'cancel',
                     params: { id: orderData.order_id }
                 })
             });
@@ -313,8 +313,8 @@ export default function PurchaseModal({ isOpen, onClose, product }: PurchaseModa
                                             <button
                                                 onClick={handleCopy}
                                                 className={`group flex items-center gap-2 px-3 py-2 rounded-lg transition-all border shadow-sm active:scale-95 ${copied
-                                                        ? 'bg-green-50 border-green-200 text-green-700'
-                                                        : 'bg-white border-slate-200 hover:border-blue-500 hover:text-blue-600'
+                                                    ? 'bg-green-50 border-green-200 text-green-700'
+                                                    : 'bg-white border-slate-200 hover:border-blue-500 hover:text-blue-600'
                                                     }`}
                                             >
                                                 {copied ? (
