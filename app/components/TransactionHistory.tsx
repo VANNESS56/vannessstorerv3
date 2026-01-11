@@ -126,20 +126,21 @@ export default function TransactionHistory() {
         setProcessingId(order.id);
 
         try {
-            // 1. Try to cancel at Provider Strict Check
+            // 1. Try to cancel at Provider using 'cancle' endpoint
             if (order.order_id_provider) {
                 const res = await fetch('/api/jasaotp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        endpoint: 'cancle',
+                        endpoint: 'cancel',
                         params: { id: order.order_id_provider }
                     })
                 });
                 const result = await res.json();
+                console.log("Cancel Result:", result);
 
                 // Expect success: true or data: true
-                if (result && (result.success === true || result.status === true)) {
+                if (result && (result.success === true || result.status === true || result.data === true)) {
                     // 2. Refund User
                     const refundAmount = currentUser.balance + order.price;
                     await updateBalance(currentUser.id, refundAmount);
@@ -152,15 +153,19 @@ export default function TransactionHistory() {
                     alert("Pesanan berhasil dibatalkan. Saldo telah dikembalikan.");
                     fetchOrders();
                 } else {
-                    // Failed to cancel (maybe already active or cancelled). Check status instead.
-                    const errorDetails = result?.message || result?.data || 'Unknown server error';
-                    alert(`Gagal cancel langsung: ${errorDetails}. Sistem akan mengecek status terbaru (siapa tahu sudah timeout)...`);
+                    // Failed to cancel.
+                    // It might be because it's already cancelled, or API error.
+                    // Let's force a Status Check.
+                    const serverMsg = result?.message || (typeof result?.data === 'string' ? result.data : JSON.stringify(result));
+                    alert(`Cancel Gagal: ${serverMsg}. Sistem akan cek status (jika timeout/batal di server = auto refund).`);
+
+                    // Fallback to check status
                     await handleCheckStatus(order);
                 }
             }
         } catch (error) {
             console.error("Cancellation failed", error);
-            alert(`Gagal membatalkan pesanan (Network/Server Error). Coba Refresh Status saja.`);
+            alert(`Gagal membatalkan pesanan (Network/Server Error). Coba Refresh Status.`);
         } finally {
             setProcessingId(null);
         }
